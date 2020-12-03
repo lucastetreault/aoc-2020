@@ -20,3 +20,12 @@ func readInt64Input(day string) []int64 {
 	}
 	return i64arr
 }
+
+func readStringsInput(day string) []string {
+	b, err := ioutil.ReadFile(day + "_input.txt")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return strings.Split(string(b), "\n")
+}
