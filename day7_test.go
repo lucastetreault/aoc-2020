@@ -8,8 +8,8 @@ import (
 
 type Bag struct {
 	Colour      string
-	ContainedIn map[string]int
-	Contains    map[string]int
+	ContainedIn []*Bag
+	Contains    []*Bag
 }
 
 func Day7Part1(input []string) int {
@@ -18,62 +18,29 @@ func Day7Part1(input []string) int {
 	queue := bags["shiny gold"].ContainedIn
 
 	options := make(map[string]int)
-	for k, v := range queue {
-		options[k] = v
+
+	for i := 0; i < len(queue); i++ {
+		options[queue[i].Colour] = 1
+		queue = append(queue, queue[i].ContainedIn...)
 	}
 
-	count := 0
-	for ; ; {
-		if len(queue) == 0 {
-			break
-		}
-
-		for next := range queue {
-			count++
-			for k, v := range bags[next].ContainedIn {
-				if _, ok := options[k]; !ok {
-					options[k] = v
-					queue[k] = v
-				}
-			}
-			delete(queue, next)
-		}
-
-	}
-
-	return count
+	return len(options)
 }
 
 func Day7Part2(input []string) int {
 	bags := parseInput(input)
 
-	queue := make([]string, 0)
+	queue := bags["shiny gold"].Contains
 
-	for k, v := range bags["shiny gold"].Contains {
-		for i := 0; i < v; i++ {
-			queue = append(queue, k)
-		}
+	for i := 0; i < len(queue); i++ {
+		queue = append(queue, queue[i].Contains...)
 	}
 
-	count := 0
-	for ; ; {
-		if len(queue) == 0 {
-			break
-		}
-		count++
-		for k, v := range bags[queue[0]].Contains {
-			for i := 0; i < v; i++ {
-				queue = append(queue, k)
-			}
-		}
-		queue = queue[1:]
-	}
-
-	return count
+	return len(queue)
 }
 
-func parseInput(input []string) map[string]Bag {
-	bags := make(map[string]Bag)
+func parseInput(input []string) map[string]*Bag {
+	bags := make(map[string]*Bag)
 
 	for _, i := range input {
 		i = strings.Replace(i, "bags", "", -1)
@@ -86,23 +53,23 @@ func parseInput(input []string) map[string]Bag {
 		for _, c := range contains {
 			b := getOrMakeBag(bags, strings.Trim(c, " ")[2:])
 			count, _ := strconv.Atoi(strings.Trim(c, " ")[:1])
-			bag.Contains[b.Colour] = count
+			for i := 0; i < count; i++ {
+				bag.Contains = append(bag.Contains, b)
+			}
 
-			if _, ok := b.ContainedIn[bag.Colour]; ok {
-				b.ContainedIn[bag.Colour] = b.ContainedIn[bag.Colour] + count
-			} else {
-				b.ContainedIn[bag.Colour] = b.ContainedIn[bag.Colour] + count
+			for i := 0; i < count; i++ {
+				b.ContainedIn = append(b.ContainedIn, bag)
 			}
 		}
 	}
 	return bags
 }
 
-func getOrMakeBag(bags map[string]Bag, colour string) Bag {
-	var bag Bag
+func getOrMakeBag(bags map[string]*Bag, colour string) *Bag {
+	var bag *Bag
 	var ok bool
 	if bag, ok = bags[colour]; !ok {
-		bags[colour] = Bag{Colour: colour, ContainedIn: make(map[string]int), Contains: make(map[string]int)}
+		bags[colour] = &Bag{Colour: colour, ContainedIn: make([]*Bag, 0), Contains: make([]*Bag, 0)}
 		bag = bags[colour]
 	}
 	return bag
@@ -147,7 +114,7 @@ func TestAOCDay7(t *testing.T) {
 			"dark blue bags contain 2 dark violet bags.",
 			"dark violet bags contain no other bags.",
 		}, fn: Day7Part2, expected: 126},
-		{name: "part2", input: readStringsInput("day7"), fn: Day7Part2, expected: -1},
+		{name: "part2", input: readStringsInput("day7"), fn: Day7Part2, expected: 5312},
 	}
 
 	for _, tt := range tests {
