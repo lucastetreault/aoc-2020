@@ -29,3 +29,4 @@ func readStringsInput(day string) []string {
 
 	return strings.Split(string(b), "\n")
 }
+
