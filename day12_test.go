@@ -127,7 +127,7 @@ func TestAOCDay12(t *testing.T) {
 			"R90",
 			"F11",
 		}, fn: day12part2, expected: 286},
-		{name: "part1", input: readStringsInput("day12"), fn: day12part2, expected: -1},
+		{name: "part1", input: readStringsInput("day12"), fn: day12part2, expected: 39518},
 	}
 
 	for _, tt := range tests {
